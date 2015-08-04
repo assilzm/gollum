@@ -49,7 +49,7 @@ module Precious
   class App < Sinatra::Base
     register Mustache::Sinatra
     include Precious::Helpers
-    
+
     dir     = File.dirname(File.expand_path(__FILE__))
 
     # Detect unsupported browsers.
@@ -418,6 +418,13 @@ module Precious
       mustache :compare
     end
 
+        # graphviz image
+    get %r{tmp/([0-9a-f]{40})\.png} do
+      file = ::File.open ::File.expand_path ::File.join wiki_new.path, "tmp/#{params[:captures][0]}.png"
+      # Use Sinatra's send_file because the pngs are not in git.
+      send_file file, :type => 'image/png'
+    end
+
     get %r{/(.+?)/([0-9a-f]{40})} do
       file_path = params[:captures][0]
       version   = params[:captures][1]
@@ -438,7 +445,7 @@ module Precious
     end
 
     get '/search' do
-      @query   = params[:q] || ''
+      @query   = params[:q]
       wiki     = wiki_new
       # Sort wiki search results by count (desc) and then by name (asc)
       @results = wiki.search(@query).sort { |a, b| (a[:count] <=> b[:count]).nonzero? || b[:name] <=> a[:name] }.reverse
